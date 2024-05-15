@@ -74,20 +74,21 @@ public:
 extern __Config Config;
 extern __Processes Processes;
 extern int ErrorCode;
-extern thread *DbgThrd,*WorkThrd,*ProcThrd;
+extern thread *DbgThrd,*WorkThrd,*ProcThrd,*ActiThrd;
 extern map<string, uint> pids;
 
 extern uint AnalArgs(int argc, char** argv);
 extern bool CheckExpression(string str);
 extern bool CheckThread(string str);
-extern map<string, map<string, string>> ReadIniFile(const string& filename); //ByChatGPT3.5
-extern bool ReadConfig();
-extern void PrintHelp();
-extern void PrintLog(string moudle, string msgtype, string msg, FILE* fp = stdout);
-extern string GetCurrentTime();
-extern void WorkThread();
-extern void ProcThread();
-extern vector<vector<string>> ReadCSV(FILE* fp);
-extern void ErrorHandler(int code);
+extern map<string, map<string, string>> ReadIniFile(const string& filename); //ByChatGPT3.5  Read a INI format file
+extern bool ReadConfig(); //Read config file(Config.ConfigFileName)
+extern void PrintHelp(); //Print help text (help text unfinished)
+extern void PrintLog(string moudle, string msgtype, string msg, FILE* fp = stdout); //Print a log
+extern string GetCurrentTime(); //%Y-%m-%d %H:%M:%S
+extern void WorkThread(); //Main work thread
+extern void ActivityThread(); //For ThrdNo$
+extern void ProcThread(); //Update process information
+extern vector<vector<string>> ReadCSV(FILE* fp); //Read a csv format data from fp
+extern void ErrorHandler(int code); //Print an error log and exit the appication
 
 extern char HelpText[];

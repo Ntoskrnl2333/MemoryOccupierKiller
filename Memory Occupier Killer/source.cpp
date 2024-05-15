@@ -499,6 +499,10 @@ void WorkThread() {
 	WorkThrd = NULL;
 }
 
+void ActivityThread(string activity,uint pid){
+	
+}
+
 void ProcThread() {
 	uint err = 0;
 	PrintLog("ProcThread", "Info", "Processes thread has been started.");
