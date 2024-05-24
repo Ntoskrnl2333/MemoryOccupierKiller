@@ -1,7 +1,7 @@
 # MemoryOccupierKiller
 A tool to kill memory occupier(or other processes) based on taskkill and tasklist for Windows NT
 
-## More technical information in *Technical documentation.md*(After it finished).
+## More technical information in *Technical Documentation.md*(After it finished).
 
 Config file format example(INI file):
 
