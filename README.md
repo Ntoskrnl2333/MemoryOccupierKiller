@@ -1,5 +1,5 @@
 # MemoryOccupierKiller
-A tool to kill memory occupier(or other processes) based on taskkill and tasklist for Windows NT
+A tool to kill memory occupier *(or other processes)* based on **taskkill** and **tasklist** for Windows NT
 
 ## More technical information in *Technical Documentation.md*(After it finished).
 
