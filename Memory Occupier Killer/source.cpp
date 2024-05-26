@@ -6,14 +6,8 @@ int ErrorCode = NO_ERROR;
 thread* DbgThrd, * WorkThrd, *ProcThrd;
 map<string, uint> pids;
 queue<string> PrintQueue;
-FILE original_stdout;
-
-#ifdef _WIN32
-#define RESTORE_STDOUT freopen("CON","w",stdout);
-#endif
 
 int main(int argc,char **argv) {
-	memcpy(&original_stdout, stdout, sizeof(FILE));
 	uint work = AnalArgs(argc,argv);
 	if (Config.__DEBUG_MODE__)
 		DbgThrd=new thread(Debug::__DebugHandlerThread);
@@ -55,6 +49,8 @@ uint AnalArgs(int argc, char** argv) {
 		string a = argv[i];
 		args.push_back(a);
 	}
+	if (filesystem::exists("mok.ini"))
+		Config.ConfigFileName = "mok.ini"; // Default config file
 	for (vector<string>::iterator it = args.begin(); it != args.end(); it++) {
 		if (*it == "/help" || *it == "/?")
 			return PRINT_HELP;
@@ -216,15 +212,10 @@ bool ReadConfig() {
 	if (ErrorCode == FILE_ERROR)
 		return false;
 
-	freopen("output.tmp", "w", stdout);
-	if (system("tasklist") != 0){
-		fclose(stdout);
-		RESTORE_STDOUT
+	if (system("tasklist > output.tmp") != 0){
 		filesystem::remove("output.tmp");
 		ErrorHandler(UNKNOWN_ERROR);
 	}
-	fclose(stdout);
-	RESTORE_STDOUT
 	filesystem::remove("output.tmp");
 
 	if (config.find("FiltersInformation") == config.end()) __EXIT_WITH_CONFIG_ERROR //Get section FiltersInformation
@@ -262,17 +253,12 @@ bool ReadConfig() {
 				if (filter.find(key) == filter.end()) __EXIT_WITH_CONFIG_ERROR //Get the variable
 					string var = filter.find(key)->second;
 
-				string command = "tasklist /FI \" " + var + "\"";//Check the veriable
-				freopen("output.tmp", "w", stdout);
+				string command = "tasklist /FI \" " + var + "\" > output.tmp";//Check the veriable
 				if (system(command.c_str()) != 0) {
-					fclose(stdout);
-					RESTORE_STDOUT
 					PrintLog("ReadConfig", "Debug", command.c_str());
 					filesystem::remove("output.tmp");
 					ErrorCode = CONFIG_ERROR; return false;
 				}
-				fclose(stdout);
-				RESTORE_STDOUT
 				filesystem::remove("output.tmp");
 
 				Config.filters[i - 1].vars.push_back(var);
@@ -484,11 +470,8 @@ void WorkThread() {
 
 			for (uint j : acceptpids) {
 				char cmd[1024];
-				sprintf(cmd,"taskkill -f -pid %u",j);
-				freopen("output.tmp", "w", stdout);
+				sprintf(cmd,"taskkill -f -pid %u > output.tmp",j);
 				system(cmd);
-				fclose(stdout);
-				RESTORE_STDOUT
 				filesystem::remove("output.tmp");
 				PrintLog("WorkThread","Debug",cmd);
 			}
@@ -497,10 +480,6 @@ void WorkThread() {
 	}
 	PrintLog("WorkThread","Info","Work thread has been exited.");
 	WorkThrd = NULL;
-}
-
-void ActivityThread(string activity,uint pid){
-	
 }
 
 void ProcThread() {
@@ -553,24 +532,24 @@ void ProcThread() {
 
 vector<vector<string>> ReadCSV(FILE* fp) {//By ChatGPT 3.5
 	vector<vector<string>> data;
-	const int bufferSize = 65535; // 定义缓冲区大小
+	const int bufferSize = 65535; // Define buffer size
 
 	char *buffer= new char[bufferSize];
-	while (fgets(buffer, bufferSize, fp) != nullptr) { // 逐行读取
+	while (fgets(buffer, bufferSize, fp) != nullptr) { // Read line by line
 		string line(buffer);
 		vector<string> row;
 		size_t pos = 0;
 		string token;
 
-		// 以逗号为分隔符提取每个字段
+		// Extract each field with comma as delimiter
 		while ((pos = line.find(',')) != string::npos) {
 			token = line.substr(0, pos);
 			row.push_back(token);
 			line.erase(0, pos + 1);
 		}
-		row.push_back(line); // 添加最后一个字段
+		row.push_back(line); // Add last field
 
-		data.push_back(row); // 将一行数据添加到data中
+		data.push_back(row); // Add a row of data to data
 	}
 
 	delete[] buffer;
